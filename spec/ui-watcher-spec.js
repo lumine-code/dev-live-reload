@@ -170,30 +170,32 @@ describe("UIWatcher", () => {
     });
   });
 
-  describe("when a package global file changes", () => {
+  describe("when a theme variables file changes", () => {
     beforeEach(async () => {
       jasmine.useRealClock();
       setActiveThemes(["theme-with-ui-variables", "theme-with-multiple-imported-files"]);
 
-      console.log("awaiting…");
       await atom.themes.activateThemes();
-      console.log("…awaited.");
       uiWatcher = new UIWatcher();
     });
 
     afterEach(() => atom.themes.deactivateThemes());
 
-    it("reloads every package when the variables file changes", async () => {
-      let varEntity;
+    function variablesEntityFor(themeName) {
+      return uiWatcher.watchedThemes
+        .get(themeName)
+        .entities.find((entity) => path.basename(entity.getPath()).includes("variables"));
+    }
+
+    it("reloads every Less consumer, and never the base stylesheets", async () => {
       for (const theme of atom.themes.getActiveThemes()) {
         spyOn(theme, "reloadStylesheets");
       }
+      spyOn(atom.themes, "reloadBaseStylesheets");
+      spyOn(atom.themes, "reloadThemeVariables").andReturn(true);
+      spyOn(atom.themes, "loadUserStylesheet");
 
-      for (const entity of uiWatcher.watchedThemes.get("theme-with-multiple-imported-files")
-        .entities) {
-        if (entity.getPath().indexOf("variables") > -1) varEntity = entity;
-      }
-      varEntity.emitter.emit("did-change");
+      variablesEntityFor("theme-with-multiple-imported-files").emitter.emit("did-change");
       await conditionPromise(() => {
         return atom.themes.getActiveThemes().every((t) => {
           return t.reloadStylesheets.callCount > 0;
@@ -203,6 +205,81 @@ describe("UIWatcher", () => {
       for (const theme of atom.themes.getActiveThemes()) {
         expect(theme.reloadStylesheets.callCount).toBe(1);
       }
+      expect(atom.themes.reloadThemeVariables).toHaveBeenCalled();
+      expect(atom.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
+      expect(atom.themes.loadUserStylesheet).toHaveBeenCalled();
+    });
+
+    it("reloads only the changed theme when the Less-visible palette did not move", async () => {
+      const themes = atom.themes.getActiveThemes();
+      const changedTheme = themes.find((t) => t.name === "theme-with-multiple-imported-files");
+      const otherTheme = themes.find((t) => t.name === "theme-with-ui-variables");
+      spyOn(changedTheme, "reloadStylesheets");
+      spyOn(otherTheme, "reloadStylesheets");
+      spyOn(atom.themes, "reloadThemeVariables").andReturn(false);
+      spyOn(atom.themes, "loadUserStylesheet");
+
+      variablesEntityFor("theme-with-multiple-imported-files").emitter.emit("did-change");
+      await conditionPromise(() => changedTheme.reloadStylesheets.callCount > 0);
+      await wait(50);
+      expect(otherTheme.reloadStylesheets).not.toHaveBeenCalled();
+      expect(atom.themes.loadUserStylesheet).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when a theme variables file changes with a CSS-only theme active", () => {
+    beforeEach(async () => {
+      jasmine.useRealClock();
+      setActiveThemes(["theme-with-index-css", "theme-with-multiple-imported-files"]);
+
+      await atom.themes.activateThemes();
+      uiWatcher = new UIWatcher();
+    });
+
+    afterEach(() => atom.themes.deactivateThemes());
+
+    it("skips the theme that has no Less to recompile", async () => {
+      const themes = atom.themes.getActiveThemes();
+      const cssTheme = themes.find((t) => t.name === "theme-with-index-css");
+      const lessTheme = themes.find((t) => t.name === "theme-with-multiple-imported-files");
+      spyOn(cssTheme, "reloadStylesheets");
+      spyOn(lessTheme, "reloadStylesheets");
+      spyOn(atom.themes, "reloadThemeVariables").andReturn(true);
+      spyOn(atom.themes, "loadUserStylesheet");
+
+      const varEntity = uiWatcher.watchedThemes
+        .get("theme-with-multiple-imported-files")
+        .entities.find((entity) => path.basename(entity.getPath()).includes("variables"));
+      varEntity.emitter.emit("did-change");
+
+      await conditionPromise(() => lessTheme.reloadStylesheets.callCount > 0);
+      await wait(50);
+      expect(cssTheme.reloadStylesheets).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when a non-theme package has a variables stylesheet", () => {
+    beforeEach(async () => {
+      jasmine.useRealClock();
+      await atom.packages.activatePackage(
+        path.join(__dirname, "fixtures", "package-with-variables"),
+      );
+      uiWatcher = new UIWatcher();
+    });
+
+    it("reloads only that package: package-local custom properties cascade at runtime", async () => {
+      const pack = atom.packages.getActivePackage("package-with-variables");
+      spyOn(pack, "reloadStylesheets");
+      spyOn(atom.themes, "reloadThemeVariables");
+
+      const watcher = uiWatcher.watchedPackages.get("package-with-variables");
+      const varEntity = watcher.entities.find(
+        (entity) => path.basename(entity.getPath()) === "variables.css",
+      );
+      varEntity.emitter.emit("did-change");
+
+      await conditionPromise(() => pack.reloadStylesheets.callCount > 0);
+      expect(atom.themes.reloadThemeVariables).not.toHaveBeenCalled();
     });
   });
 
@@ -305,20 +382,31 @@ describe("UIWatcher", () => {
     afterEach(() => atom.themes.deactivateThemes());
 
     it("reloads the theme when anything within the theme changes", async () => {
-      spyOn(pack, "reloadStylesheets");
+      const themes = atom.themes.getActiveThemes();
+      const changedTheme = themes.find((t) => t.name === "theme-with-multiple-imported-files");
+      const otherTheme = themes.find((t) => t.name === "theme-with-syntax-variables");
+      spyOn(changedTheme, "reloadStylesheets");
+      spyOn(otherTheme, "reloadStylesheets");
       spyOn(atom.themes, "reloadBaseStylesheets");
+      spyOn(atom.themes, "reloadThemeVariables").andReturn(true);
+      spyOn(atom.themes, "loadUserStylesheet");
 
       const watcher = uiWatcher.watchedThemes.get("theme-with-multiple-imported-files");
 
       expect(watcher.entities.length).toBe(6);
 
+      // An ordinary stylesheet reloads its own theme and nothing else.
       watcher.entities[2].emitter.emit("did-change");
-      await conditionPromise(() => pack.reloadStylesheets.callCount > 0);
-      expect(pack.reloadStylesheets).toHaveBeenCalled();
-      expect(atom.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
+      await conditionPromise(() => changedTheme.reloadStylesheets.callCount > 0);
+      expect(atom.themes.reloadThemeVariables).not.toHaveBeenCalled();
+      expect(otherTheme.reloadStylesheets).not.toHaveBeenCalled();
 
+      // ui-variables.less re-derives the variables and recompiles the other
+      // Less consumer; the base stylesheets never depend on theme variables.
       watcher.entities[watcher.entities.length - 1].emitter.emit("did-change");
-      await conditionPromise(() => atom.themes.reloadBaseStylesheets.callCount > 0);
+      await conditionPromise(() => otherTheme.reloadStylesheets.callCount > 0);
+      expect(atom.themes.reloadThemeVariables).toHaveBeenCalled();
+      expect(atom.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
     });
 
     it("unwatches when a theme is deactivated", async () => {

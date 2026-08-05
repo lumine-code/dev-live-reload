@@ -22,6 +22,8 @@ Commands available in `atom-workspace`:
 
 New `.css` and `.less` files added within an active package or theme's styles directories are picked up without reloading the window.
 
+An edit to a stylesheet reloads only the package that owns it. Editing a theme's variable definitions (`variables.css`, `ui-variables.less`, `syntax-variables.less`) additionally re-derives the theme's Less variables and recompiles the stylesheets that were compiled against them — and only those, since CSS custom properties cascade at runtime without recompilation.
+
 ## Contributing
 
 Got ideas to make this package better, found a bug, or want to help add new features? Just drop your thoughts on GitHub. Any feedback is welcome!
