@@ -1,0 +1,39 @@
+{
+  "name": "dev-live-reload",
+  "author": "lumine-code",
+  "version": "1.0.0",
+  "description": "Live reload themes and packages as you edit their stylesheets.",
+  "keywords": [
+    "hot-reload",
+    "stylesheet",
+    "watch",
+    "developer",
+    "package-dev"
+  ],
+  "repository": "https://github.com/lumine-code/dev-live-reload",
+  "bugs": {
+    "url": "https://github.com/lumine-code/dev-live-reload/issues"
+  },
+  "license": "MIT",
+  "main": "./lib/main",
+  "engines": {
+    "lumine": "^1.0.0"
+  },
+  "scripts": {
+    "test": "lumine --test spec",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@lumine-code/fs-plus": "https://github.com/lumine-code/fs-plus.git#742e3e166f56261189ff245a63967b8f1970fadd"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.2.2",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.6"
+  }
+}
