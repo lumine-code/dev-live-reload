@@ -1,8 +1,9 @@
 {
-  ".platform-darwin": {
-    "cmd-ctrl-R": "dev-live-reload:reload-all"
-  },
-  ".platform-win32": {
-    "alt-ctrl-R": "dev-live-reload:reload-all"
+  // A bare `.platform-*` selector binds at body with class specificity, so it
+  // outranks every core body binding by an order of magnitude for a developer
+  // command. cmdorctrl- covers the cmd/ctrl swap and the linux block that was
+  // simply missing, and shift- replaces the uppercase R.
+  "atom-workspace": {
+    "cmdorctrl-alt-shift-r": "dev-live-reload:reload-all"
   }
 }
