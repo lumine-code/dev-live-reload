@@ -14,7 +14,7 @@ To install `dev-live-reload` search for _dev-live-reload_ in the Install pane of
 
 ## Commands
 
-Commands available in `atom-workspace`:
+Commands available in `lumine-workspace`:
 
 - `dev-live-reload:reload-all`: reload all core and package stylesheets.
 
