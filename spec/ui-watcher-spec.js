@@ -4,7 +4,7 @@ const fs = require("@lumine-code/fs-plus");
 
 const UIWatcher = require("../lib/ui-watcher");
 
-const { conditionPromise, timeoutPromise: wait } = require("./async-spec-helpers");
+const wait = timeoutPromise;
 
 // The active theme pair is derived from the mode and the light/dark pairs;
 // set both so the active pair is the given list regardless of mode.
@@ -37,7 +37,7 @@ describe("UIWatcher", () => {
 
       uiWatcher.baseTheme.entities[0].emitter.emit("did-change");
       await conditionPromise(() => {
-        return lumine.themes.reloadBaseStylesheets.callCount > 0;
+        return lumine.themes.reloadBaseStylesheets.calls.count() > 0;
       });
     });
   });
@@ -111,14 +111,14 @@ describe("UIWatcher", () => {
       await conditionPromise(() =>
         watcher.entities.some((entity) => entity.getPath() === addedStylesheetPath),
       );
-      await conditionPromise(() => pack.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
 
       pack.reloadStylesheets.calls.reset();
       const addedStylesheet = watcher.entities.find(
         (entity) => entity.getPath() === addedStylesheetPath,
       );
       addedStylesheet.emitter.emit("did-change");
-      await conditionPromise(() => pack.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
     } finally {
       fs.removeSync(addedStylesheetPath);
     }
@@ -138,7 +138,7 @@ describe("UIWatcher", () => {
       spyOn(pack, "reloadStylesheets");
 
       uiWatcher.watchers[uiWatcher.watchers.length - 1].entities[1].emitter.emit("did-change");
-      await conditionPromise(() => pack.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
 
       expect(pack.reloadStylesheets).toHaveBeenCalled();
     });
@@ -153,9 +153,9 @@ describe("UIWatcher", () => {
       entity.emitter.emit("did-change");
       entity.emitter.emit("did-rename");
 
-      await conditionPromise(() => pack.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
       await wait(50);
-      expect(pack.reloadStylesheets.callCount).toBe(1);
+      expect(pack.reloadStylesheets.calls.count()).toBe(1);
     });
   });
 
@@ -197,9 +197,9 @@ describe("UIWatcher", () => {
         .entities.find((entity) => path.basename(entity.getPath()) === "variables.css");
       varEntity.emitter.emit("did-change");
 
-      await conditionPromise(() => changedTheme.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => changedTheme.reloadStylesheets.calls.count() > 0);
       await wait(50);
-      expect(changedTheme.reloadStylesheets.callCount).toBe(1);
+      expect(changedTheme.reloadStylesheets.calls.count()).toBe(1);
       expect(otherTheme.reloadStylesheets).not.toHaveBeenCalled();
       expect(lumine.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
     });
@@ -225,7 +225,7 @@ describe("UIWatcher", () => {
       );
       varEntity.emitter.emit("did-change");
 
-      await conditionPromise(() => pack.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
       expect(lumine.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
     });
   });
@@ -298,7 +298,7 @@ describe("UIWatcher", () => {
       ]);
 
       cssWatcher.entities[0].emitter.emit("did-change");
-      await conditionPromise(() => cssTheme.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => cssTheme.reloadStylesheets.calls.count() > 0);
       expect(lumine.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
     });
   });
@@ -330,7 +330,7 @@ describe("UIWatcher", () => {
       expect(watcher.entities.length).toBe(6);
 
       watcher.entities[2].emitter.emit("did-change");
-      await conditionPromise(() => changedTheme.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => changedTheme.reloadStylesheets.calls.count() > 0);
       expect(otherTheme.reloadStylesheets).not.toHaveBeenCalled();
       expect(lumine.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
     });
@@ -355,7 +355,7 @@ describe("UIWatcher", () => {
 
       const watcher = uiWatcher.watchedThemes.get("theme-with-package-file");
       watcher.entities[2].emitter.emit("did-change");
-      await conditionPromise(() => pack.reloadStylesheets.callCount > 0);
+      await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
     });
   });
 });

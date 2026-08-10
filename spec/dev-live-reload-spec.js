@@ -10,10 +10,10 @@ describe("Dev Live Reload", () => {
     });
 
     describe("when the window is not in dev mode", () => {
-      beforeEach(() => spyOn(lumine.window, "isDevMode").andReturn(false));
+      beforeEach(() => spyOn(lumine.window, "isDevMode").and.returnValue(false));
 
       it("does not watch files", async () => {
-        spyOn(lumine.packages, "hasActivatedInitialPackages").andReturn(true);
+        spyOn(lumine.packages, "hasActivatedInitialPackages").and.returnValue(true);
 
         await lumine.packages.activatePackage("dev-live-reload");
         expect(mainModule.startWatching).not.toHaveBeenCalled();
@@ -21,10 +21,10 @@ describe("Dev Live Reload", () => {
     });
 
     describe("when the window is in spec mode", () => {
-      beforeEach(() => spyOn(lumine.window, "isSpecMode").andReturn(true));
+      beforeEach(() => spyOn(lumine.window, "isSpecMode").and.returnValue(true));
 
       it("does not watch files", async () => {
-        spyOn(lumine.packages, "hasActivatedInitialPackages").andReturn(true);
+        spyOn(lumine.packages, "hasActivatedInitialPackages").and.returnValue(true);
 
         await lumine.packages.activatePackage("dev-live-reload");
         expect(mainModule.startWatching).not.toHaveBeenCalled();
@@ -33,12 +33,12 @@ describe("Dev Live Reload", () => {
 
     describe("when the window is in dev mode", () => {
       beforeEach(() => {
-        spyOn(lumine.window, "isDevMode").andReturn(true);
-        spyOn(lumine.window, "isSpecMode").andReturn(false);
+        spyOn(lumine.window, "isDevMode").and.returnValue(true);
+        spyOn(lumine.window, "isSpecMode").and.returnValue(false);
       });
 
       it("watches files", async () => {
-        spyOn(lumine.packages, "hasActivatedInitialPackages").andReturn(true);
+        spyOn(lumine.packages, "hasActivatedInitialPackages").and.returnValue(true);
 
         await lumine.packages.activatePackage("dev-live-reload");
         expect(mainModule.startWatching).toHaveBeenCalled();
@@ -47,12 +47,12 @@ describe("Dev Live Reload", () => {
 
     describe("when the window is in both dev mode and spec mode", () => {
       beforeEach(() => {
-        spyOn(lumine.window, "isDevMode").andReturn(true);
-        spyOn(lumine.window, "isSpecMode").andReturn(true);
+        spyOn(lumine.window, "isDevMode").and.returnValue(true);
+        spyOn(lumine.window, "isSpecMode").and.returnValue(true);
       });
 
       it("does not watch files", async () => {
-        spyOn(lumine.packages, "hasActivatedInitialPackages").andReturn(true);
+        spyOn(lumine.packages, "hasActivatedInitialPackages").and.returnValue(true);
 
         await lumine.packages.activatePackage("dev-live-reload");
         expect(mainModule.startWatching).not.toHaveBeenCalled();
@@ -61,8 +61,8 @@ describe("Dev Live Reload", () => {
 
     describe("when the package is activated before initial packages have been activated", () => {
       beforeEach(() => {
-        spyOn(lumine.window, "isDevMode").andReturn(true);
-        spyOn(lumine.window, "isSpecMode").andReturn(false);
+        spyOn(lumine.window, "isDevMode").and.returnValue(true);
+        spyOn(lumine.window, "isSpecMode").and.returnValue(false);
       });
 
       it("waits until all initial packages have been activated before watching files", async () => {
@@ -77,12 +77,12 @@ describe("Dev Live Reload", () => {
 
   describe("package deactivation", () => {
     beforeEach(() => {
-      spyOn(lumine.window, "isDevMode").andReturn(true);
-      spyOn(lumine.window, "isSpecMode").andReturn(false);
+      spyOn(lumine.window, "isDevMode").and.returnValue(true);
+      spyOn(lumine.window, "isSpecMode").and.returnValue(false);
     });
 
     it("stops watching all files", async () => {
-      spyOn(lumine.packages, "hasActivatedInitialPackages").andReturn(true);
+      spyOn(lumine.packages, "hasActivatedInitialPackages").and.returnValue(true);
       const { mainModule } = await lumine.packages.activatePackage("dev-live-reload");
       expect(mainModule.uiWatcher).not.toBeNull();
 
@@ -105,7 +105,7 @@ describe("Dev Live Reload", () => {
     });
 
     it("removes its commands", async () => {
-      spyOn(lumine.packages, "hasActivatedInitialPackages").andReturn(true);
+      spyOn(lumine.packages, "hasActivatedInitialPackages").and.returnValue(true);
       await lumine.packages.activatePackage("dev-live-reload");
       expect(
         lumine.commands
