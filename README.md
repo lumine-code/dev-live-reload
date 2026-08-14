@@ -10,7 +10,7 @@ Live reload themes and packages as you edit their stylesheets.
 
 ## Installation
 
-To install `dev-live-reload` search for _dev-live-reload_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/dev-live-reload`.
+To install `dev-live-reload` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/dev-live-reload`.
 
 ## Commands
 
