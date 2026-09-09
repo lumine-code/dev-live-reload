@@ -1,6 +1,7 @@
 const path = require("path");
 const nodeFs = require("fs");
 const fs = require("@lumine-code/fs-plus");
+const { Disposable } = require("lumine");
 
 const UIWatcher = require("../lib/ui-watcher");
 
@@ -15,6 +16,37 @@ function setActiveThemes(names) {
 
 describe("UIWatcher", () => {
   let uiWatcher = null;
+  let changes;
+  const emitChange = (entity) => {
+    changes.get(entity.watcher)?.([{ action: "updated", path: entity.getPath() }]);
+  };
+
+  beforeEach(() => {
+    changes = new Map();
+    const watch = (filePath) => {
+      const handle = {
+        path: filePath,
+        ready: Promise.resolve(),
+        closed: Promise.resolve(),
+        onDidChange(callback) {
+          changes.set(handle, callback);
+          return new Disposable(() => changes.delete(handle));
+        },
+        onDidInvalidate() {
+          return new Disposable();
+        },
+        onDidError() {
+          return new Disposable();
+        },
+        dispose() {
+          changes.delete(handle);
+        },
+      };
+      return handle;
+    };
+    spyOn(lumine.fileWatchClient, "watchFile").and.callFake(watch);
+    spyOn(lumine.fileWatchClient, "watchDirectory").and.callFake(watch);
+  });
 
   beforeEach(() => lumine.packages.packageDirPaths.push(path.join(__dirname, "fixtures")));
 
@@ -35,7 +67,7 @@ describe("UIWatcher", () => {
       );
       expect(baseStylesheetPaths.every((filePath) => path.extname(filePath) === ".css")).toBe(true);
 
-      uiWatcher.baseTheme.entities[0].emitter.emit("did-change");
+      emitChange(uiWatcher.baseTheme.entities[0]);
       await conditionPromise(() => {
         return lumine.themes.reloadBaseStylesheets.calls.count() > 0;
       });
@@ -106,7 +138,7 @@ describe("UIWatcher", () => {
       spyOn(pack, "reloadStylesheets");
 
       fs.writeFileSync(addedStylesheetPath, ".added {}\n");
-      watcher.entities[0].emitter.emit("did-change");
+      emitChange(watcher.entities[0]);
 
       await conditionPromise(() =>
         watcher.entities.some((entity) => entity.getPath() === addedStylesheetPath),
@@ -117,7 +149,7 @@ describe("UIWatcher", () => {
       const addedStylesheet = watcher.entities.find(
         (entity) => entity.getPath() === addedStylesheetPath,
       );
-      addedStylesheet.emitter.emit("did-change");
+      emitChange(addedStylesheet);
       await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
     } finally {
       fs.removeSync(addedStylesheetPath);
@@ -137,7 +169,7 @@ describe("UIWatcher", () => {
       const pack = lumine.packages.getActivePackages()[0];
       spyOn(pack, "reloadStylesheets");
 
-      uiWatcher.watchers[uiWatcher.watchers.length - 1].entities[1].emitter.emit("did-change");
+      emitChange(uiWatcher.watchers[uiWatcher.watchers.length - 1].entities[1]);
       await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
 
       expect(pack.reloadStylesheets).toHaveBeenCalled();
@@ -149,9 +181,9 @@ describe("UIWatcher", () => {
       spyOn(pack, "reloadStylesheets");
 
       const entity = uiWatcher.watchers[uiWatcher.watchers.length - 1].entities[1];
-      entity.emitter.emit("did-change");
-      entity.emitter.emit("did-change");
-      entity.emitter.emit("did-rename");
+      emitChange(entity);
+      emitChange(entity);
+      emitChange(entity);
 
       await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
       await wait(50);
@@ -195,7 +227,7 @@ describe("UIWatcher", () => {
       const varEntity = uiWatcher.watchedThemes
         .get("theme-with-multiple-imported-files")
         .entities.find((entity) => path.basename(entity.getPath()) === "variables.css");
-      varEntity.emitter.emit("did-change");
+      emitChange(varEntity);
 
       await conditionPromise(() => changedTheme.reloadStylesheets.calls.count() > 0);
       await wait(50);
@@ -223,7 +255,7 @@ describe("UIWatcher", () => {
       const varEntity = watcher.entities.find(
         (entity) => path.basename(entity.getPath()) === "variables.css",
       );
-      varEntity.emitter.emit("did-change");
+      emitChange(varEntity);
 
       await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
       expect(lumine.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
@@ -297,7 +329,7 @@ describe("UIWatcher", () => {
         "index.css",
       ]);
 
-      cssWatcher.entities[0].emitter.emit("did-change");
+      emitChange(cssWatcher.entities[0]);
       await conditionPromise(() => cssTheme.reloadStylesheets.calls.count() > 0);
       expect(lumine.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
     });
@@ -329,7 +361,7 @@ describe("UIWatcher", () => {
       // The styles directory, index.css, and the four stylesheets under it.
       expect(watcher.entities.length).toBe(6);
 
-      watcher.entities[2].emitter.emit("did-change");
+      emitChange(watcher.entities[2]);
       await conditionPromise(() => changedTheme.reloadStylesheets.calls.count() > 0);
       expect(otherTheme.reloadStylesheets).not.toHaveBeenCalled();
       expect(lumine.themes.reloadBaseStylesheets).not.toHaveBeenCalled();
@@ -354,7 +386,7 @@ describe("UIWatcher", () => {
       expect(pack.name).toBe("theme-with-package-file");
 
       const watcher = uiWatcher.watchedThemes.get("theme-with-package-file");
-      watcher.entities[2].emitter.emit("did-change");
+      emitChange(watcher.entities[2]);
       await conditionPromise(() => pack.reloadStylesheets.calls.count() > 0);
     });
   });
