@@ -2,6 +2,8 @@
 
 Live reload themes and packages as you edit their stylesheets.
 
+Fork of [pulsar-edit/pulsar](https://github.com/pulsar-edit/pulsar) (`packages/dev-live-reload`).
+
 ## Features
 
 - **Live style reload**: reflects edits to `.css` files in any running Lumine window instantly.
