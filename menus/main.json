@@ -8,7 +8,9 @@
           "submenu": [
             {
               "label": "Reload All Styles",
-              "command": "dev-live-reload:reload-all"
+              "command": "dev-live-reload:reload-all",
+              "group": "windows",
+              "order": 40
             }
           ]
         }
