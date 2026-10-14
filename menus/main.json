@@ -1,18 +1,13 @@
 {
   "menu": [
     {
-      "label": "View",
+      "label": "Developer",
       "submenu": [
         {
-          "label": "Developer",
-          "submenu": [
-            {
-              "label": "Reload All Styles",
-              "command": "dev-live-reload:reload-all",
-              "group": "windows",
-              "order": 40
-            }
-          ]
+          "label": "Reload All Styles",
+          "command": "dev-live-reload:reload-all",
+          "group": "windows",
+          "order": 40
         }
       ]
     },
