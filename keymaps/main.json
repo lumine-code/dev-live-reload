@@ -1,9 +1,6 @@
 {
-  // A bare `.platform-*` selector binds at body with class specificity, so it
-  // outranks every core body binding by an order of magnitude for a developer
-  // command. cmdorctrl- covers the cmd/ctrl swap and the linux block that was
-  // simply missing, and shift- replaces the uppercase R.
+  // The chord stays available on layouts where Ctrl+Alt types AltGr text.
   "lumine-workspace": {
-    "cmdorctrl-alt-shift-r": "dev-live-reload:reload-all"
+    "cmdorctrl-k shift-r": "dev-live-reload:reload-all"
   }
 }
