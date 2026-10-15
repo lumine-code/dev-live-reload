@@ -6,8 +6,8 @@
         {
           "label": "Reload All Styles",
           "command": "dev-live-reload:reload-all",
-          "group": "windows",
-          "order": 40
+          "group": "tools",
+          "order": 30
         }
       ]
     },
