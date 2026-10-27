@@ -7,7 +7,7 @@
           "label": "Reload All Styles",
           "command": "dev-live-reload:reload-all",
           "group": "tools",
-          "order": 30
+          "order": 31
         }
       ]
     },
