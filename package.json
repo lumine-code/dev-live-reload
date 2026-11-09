@@ -33,7 +33,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@lumine-code/fs-plus": "github:lumine-code/fs-plus#127d74a0d0eed94dffa2d63afc577d03cfbf1708"
+    "@lumine-code/fs-plus": "github:lumine-code/fs-plus#64292b9894999c89d6379c2fa250886b01ca8665"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
